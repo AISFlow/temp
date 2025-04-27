@@ -1,0 +1,49 @@
+name: Yearly MD&A Extraction with uv
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-yearly-mdna:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        year: [2013,2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+
+    env:
+      START_DATE: ${{ matrix.year }}0101
+      END_DATE: ${{ matrix.year }}1231
+      UV_SYSTEM_PYTHON: 1
+      BRANCH_NAME: year-${{ matrix.year }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Install uv (with cache)
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: '0.6.14'
+
+      - name: Install dependencies via uv
+        run: uv sync --all-extras --dev
+
+      - name: Create & switch to year branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH_NAME"
+
+      - name: Run MD&A extraction for year ${{ matrix.year }}
+        run: uv run python step1.py
+        env:
+          GITHUB_CI: true
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
