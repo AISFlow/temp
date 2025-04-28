@@ -63,10 +63,10 @@ def save_progress(date_str):
     if not articles_list:
         return
     df = pd.DataFrame(articles_list)
-    output_path = os.path.join(OUTPUT_DIR, f"news_{date_str}.xlsx")
-    backup_path = os.path.join(BACKUP_DIR, f"news_{date_str}.xlsx")
+    output_path = os.path.join(OUTPUT_DIR, f"news_{date_str}.csv")
+    backup_path = os.path.join(BACKUP_DIR, f"news_{date_str}.csv")
 
-    df.to_excel(output_path, index=False)
+    df.to_csv(output_path, index=False)
     shutil.copy(output_path, backup_path)
 
     with open(PROGRESS_FILE, "w") as f:
